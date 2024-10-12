@@ -1,0 +1,132 @@
+<html>
+
+<head>
+    <title>Tartarus Control</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="./assets/ps.css"/>
+</head>
+
+<body>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+
+    <!-- Big warning that this is for authorized personel only-->
+    <div class="alert alert-danger" role="alert">
+        This is a restricted area. Only authorized personnel are allowed.
+    </div>
+
+    <!-- Bootstrap4 to create a rover via /api/rover POST -->
+    <div class="container h-10">
+        <div class="row h-10 justify-content-center">
+            <div class="col-md-4">
+                <form id="roverForm" action="/api/rovers" method="POST">
+                    <div class="form-group
+                    ">
+                    </div> <!-- button click should reload the page-->
+                    <button type="submit" class="btn btn-primary">Create Rover</button>
+                    <script>
+                        document.getElementById('roverForm').onsubmit = () => {
+                            location.reload();
+                        };
+                    </script>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- JS to pull and populate table of all running rovers, with columns being id(Name), status, and dummy buttons for command and destroy-->
+    <div class="container h-90">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <div id="roverTable">
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        fetch('/api/rovers')
+            .then(response => response.json())
+            .then(data => {
+                let table = document.createElement('table');
+                table.className = 'table table-dark table-striped rounded';
+                let thead = document.createElement('thead');
+                let tr = document.createElement('tr');
+                let th = document.createElement('th');
+                th.scope = 'col';
+                th.innerText = 'Name';
+                tr.appendChild(th);
+                th = document.createElement('th');
+                th.scope = 'col';
+                th.innerText = 'Command';
+                tr.appendChild(th);
+                th = document.createElement('th');
+                th.scope = 'col';
+                th.innerText = 'Direct';
+                tr.appendChild(th);
+                thead.appendChild(tr);
+                table.appendChild(thead);
+                let tbody = document.createElement('tbody');
+                data.forEach(rover => {
+                    tr = document.createElement('tr');
+                    let td = document.createElement('td');
+                    td.innerText = rover;
+                    tr.appendChild(td);
+                    // Command button with input for command
+                    td = document.createElement('td');
+                    let input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = 'Command';
+                    let button = document.createElement('button');
+                    button.className = 'btn btn-primary';
+                    button.innerText = 'Command';
+                    button.onclick = () => {
+                        fetch(`/api/rovers/${rover}/command`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                command: input.value
+                            })
+                        });
+                        // refresh page
+                        location.reload();
+                    };
+                    td.appendChild(input);
+                    td.appendChild(button);
+                    tr.appendChild(td);
+                    td = document.createElement('td');
+                    button = document.createElement('button');
+                    button.className = 'btn btn-danger';
+                    button.innerText = 'Return to base';
+                    button.onclick = () => {
+                        fetch(`/api/rovers/${rover}`, {
+                            method: 'DELETE'
+                        });
+                        // refresh page
+                        location.reload();
+                    };
+                    td.appendChild(button);
+                    tr.appendChild(td);
+                    tbody.appendChild(tr);
+                });
+                table.appendChild(tbody);
+                document.getElementById('roverTable').appendChild(table);
+                // reload page
+                document.getElementById('roverForm').onsubmit = () => {
+                    location.reload();
+                };
+            });
+    </script>
+</body>
+
+</html>
