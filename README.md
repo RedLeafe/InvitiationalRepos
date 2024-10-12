@@ -8,7 +8,7 @@ This controller allows employees to remotely manage lunar rovers with a central 
 
 To test the application locally:
 * Build the golang with `go build`
-* Run the controller with `sudo KUBECONFIG=/home/tokugero/repos/wrccdc/tartarus/kubeconfig ROVER_IMAGE=192.168.220.221:5000/rover:v1.0.0 ./tartarus.moon.mine -controlpanel`
+* Run the controller with `sudo KUBECONFIG=/home/tokugero/repos/wrccdc/tartarus/kubeconfig ROVER_IMAGE=192.168.220.13:5000/rover:v1.0.0 ./tartarus.moon.mine -controlpanel`
     * App works best as sudo to use port 80, but not strictly necessary
     * KUBECONFIG is necessary to connect to the correct kubernetes cluster
     * ROVER_IMAGE tells the controller from where the rover image will come. Note that this is relative to the cluster
@@ -18,6 +18,6 @@ To test the application locally:
 
 ## Deploying
 Alternatively you can run the container, you'll need to do this to deploy the service:
-* Build the container with `docker build -t 192.168.220.221:5000/rover:<tag> .`
-* Run the controller container with `docker run --rm -it -e KUBECONFIG=/home/tokugero/repos/wrccdc/tartarus/kubeconfig -e ROVER_IMAGE=192.168.220.221:5000/rover:v1.0.0 192.168.220.221:5000/rover -controlpanel`
-* Run the rover container with `docker run --rm -it 192.168.220.221:5000/rover -rover`
+* Build the container with `docker build -t 192.168.220.13:5000/rover:<tag> .`
+* Run the controller container with `docker run --rm -it -e KUBECONFIG=/home/tokugero/repos/wrccdc/tartarus/kubeconfig -e ROVER_IMAGE=192.168.220.13:5000/rover:v1.0.0 192.168.220.13:5000/rover -controlpanel`
+* Run the rover container with `docker run --rm -it 192.168.220.13:5000/rover -rover`
