@@ -122,7 +122,7 @@ func (c *Client) DeletePod(namespace, podName string) error {
 }
 
 // CreatePod creates a pod given a namespace and optional pod configuration
-func (c *Client) CreatePod(namespace string, podConfig *core.Pod) error {
+func (c *Client) CreatePod(namespace string, podConfig *core.Pod) (string, error) {
 	// Set a default pod configuration if podConfig is nil
 	if podConfig == nil {
 		podConfig = &core.Pod{
@@ -173,8 +173,8 @@ func (c *Client) CreatePod(namespace string, podConfig *core.Pod) error {
 	_, err := c.client.CoreV1().Pods(namespace).Create(context.TODO(), podConfig, metav1.CreateOptions{})
 	if err != nil {
 		log.Println("Error creating pod", "namespace", namespace, "podConfig", podConfig, "ERROR", err)
-		return err
+		return "", err
 	}
-
-	return nil
+	// return podname
+	return podConfig.Name, err
 }

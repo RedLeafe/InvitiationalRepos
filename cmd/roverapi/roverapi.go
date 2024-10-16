@@ -54,6 +54,9 @@ func commandPod(w http.ResponseWriter, r *http.Request) {
 	// Log the command that was executed
 	log.Println("Command executed", "command", req.Command)
 	
+	// Log the output of the command as a header
+	w.Header().Set("Command-Output", string(out))
+
 	// Return
 	w.Write(out)
 }

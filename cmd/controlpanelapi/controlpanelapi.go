@@ -141,11 +141,17 @@ func createRover(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Creating a new rover")
 
-	cluster_err := cluster.CreatePod("rovers", nil)
+	podname, cluster_err := cluster.CreatePod("rovers", nil)
 	if cluster_err != nil {
 		log.Println("Error creating rover: ", err)
 	}
 
+	// set return header to include podname
+	w.Header().Set("X-RoverID", podname)
+	w.Header().Set("Location", "/controlpanel.html")
+	log.Println("Created rover: ", podname)
+
+	// redirect to controlpanel.html
 	http.Redirect(w, r, "/controlpanel.html", http.StatusFound)
 }
 
@@ -201,7 +207,7 @@ func commandRover(w http.ResponseWriter, r *http.Request) {
 
 	// http post to target IP address:8080/command with the body contents of the command
 	//_, err = http.Post("http://"+target.Status.PodIP+":8080/command", "application/json", command)
-	_, err = http.Post("http://"+target.Status.PodIP+":"+port+"/command", "application/json", strings.NewReader(body.String()))
+	commandresp, err := http.Post("http://"+target.Status.PodIP+":"+port+"/command", "application/json", strings.NewReader(body.String()))
 	if err != nil {
 		log.Println("Error commanding rover: ", err)
 		http.Redirect(w, r, "/controlpanel.html", http.StatusFound)
@@ -211,8 +217,15 @@ func commandRover(w http.ResponseWriter, r *http.Request) {
 	log.Println("Commanding rover: ", target.Status.PodIP)
 	// log the command that's being sent in the request
 	log.Println("Command: ", body.String())
+	// log the results from the "Command-Output" header
+	log.Println("Command-Output: ", commandresp.Header.Get("Command-Output"))
 
-	http.Redirect(w, r, "/controlpanel.html", http.StatusFound)
+	// Add the results to the header
+	w.Header().Set("X-Command-Output", commandresp.Header.Get("Command-Output"))
+	w.Header().Set("Location", "/controlpanel.html")
+
+	// respond with the podname
+	w.Write([]byte(commandresp.Header.Get("Command-Output")))
 }
 
 // deleteRover endpoint, if valid it should delete a specific rover
@@ -244,4 +257,6 @@ func health(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	log.Println("Checking health")
+
+	w.Write([]byte("OK"))
 }
